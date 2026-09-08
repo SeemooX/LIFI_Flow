@@ -4,81 +4,7 @@ import { createClient } from '@lifi/sdk';
 import { getRoutes } from '@lifi/sdk';
 import Header from "./components/Header";
 import HeroSectionTop from "./components/HerosectionTop";
-import type { StepKind, RouteStep, Chain } from "../types/appTypes";
 import HeroSectionBottom from "./components/HeroSectionBottom";
-
-const CHAINS: Chain[] = [
-  { id: "eth", name: "Ethereum", color: "#627EEA", symbol: "Ξ" },
-  { id: "base", name: "Base", color: "#0052FF", symbol: "B" },
-  { id: "pol", name: "Polygon", color: "#8247E5", symbol: "P" },
-  { id: "arb", name: "Arbitrum", color: "#12AAFF", symbol: "A" },
-  { id: "opt", name: "Optimism", color: "#FF0420", symbol: "O" },
-  { id: "sol", name: "Solana", color: "#9945FF", symbol: "S" },
-];
-
-const CHAIN_MAP = Object.fromEntries(CHAINS.map((c) => [c.id, c]));
-
-const TOKENS: Record<string, string[]> = {
-  eth: ["ETH", "USDC", "USDT", "DAI", "WBTC"],
-  base: ["ETH", "USDC", "USDbC", "DAI"],
-  pol: ["MATIC", "USDC", "USDT", "DAI", "WETH"],
-  arb: ["ETH", "USDC", "USDT", "ARB", "GMX"],
-  opt: ["ETH", "USDC", "USDT", "OP"],
-  sol: ["SOL", "USDC", "USDT", "RAY"],
-};
-
-const MOCK_STEPS: RouteStep[] = [
-  {
-    id: 1,
-    kind: "swap",
-    protocol: "Uniswap V3",
-    protocolInitial: "U",
-    protocolColor: "#FF007A",
-    fromToken: "ETH",
-    toToken: "USDC",
-    fromChain: "eth",
-    toChain: "eth",
-    gas: "$1.82",
-    duration: "~30s",
-  },
-  {
-    id: 2,
-    kind: "bridge",
-    protocol: "Stargate",
-    protocolInitial: "S",
-    protocolColor: "#9B8CFF",
-    fromToken: "USDC",
-    toToken: "USDC",
-    fromChain: "eth",
-    toChain: "pol",
-    gas: "$1.20",
-    duration: "~3m 30s",
-  },
-  {
-    id: 3,
-    kind: "swap",
-    protocol: "QuickSwap",
-    protocolInitial: "Q",
-    protocolColor: "#2D9CFF",
-    fromToken: "USDC",
-    toToken: "USDC",
-    fromChain: "pol",
-    toChain: "pol",
-    gas: "$0.40",
-    duration: "~32s",
-  },
-];
-
-const MOCK_SUMMARY = {
-  output: "1,847.23 USDC",
-  time: "4m 32s",
-  gas: "$3.42",
-  bridge: "Stargate",
-  dex: "Uniswap V3",
-  slippage: "0.50%",
-  steps: 3,
-  tags: ["CHEAPEST", "FASTEST"],
-};
 
 const RAW_JSON = {
   id: "route_01j5kx7b2c9f8e3d",
@@ -164,17 +90,11 @@ function Divider({ label }: { label?: string }) {
 }
 
 export default function App() {
-  // Form state
-  const [srcChain, setSrcChain] = useState("eth");
-  const [srcToken, setSrcToken] = useState("ETH");
-  const [amount, setAmount] = useState("1.0");
-  const [dstChain, setDstChain] = useState("pol");
-  const [dstToken, setDstToken] = useState("USDC");
 
   // Result state
-  const [loading, setLoading] = useState(false);
-  const [loadMsg, setLoadMsg] = useState("");
-  const [routeReady, setRouteReady] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [loadMsg, setLoadMsg] = useState<string>("");
+  const [routeReady, setRouteReady] = useState<boolean>(false);
   const [devTab, setDevTab] = useState<"summary" | "json">("summary");
 
   const msgIdxRef = useRef(0);
@@ -249,9 +169,6 @@ export default function App() {
     setDevTab("summary");
   };
 
-  const chainOpts = CHAINS.map((c) => ({ value: c.id, label: c.name }));
-  const srcTokOpts = TOKENS[srcChain] ?? [];
-  const dstTokOpts = TOKENS[dstChain] ?? [];
   const jsonStr = JSON.stringify(RAW_JSON, null, 2);
 
   return (
@@ -291,7 +208,7 @@ export default function App() {
         </div>
 
         {/* The top part of the Herosection */}
-        <HeroSectionTop/>
+        <HeroSectionTop routeReady={routeReady} handleFind={handleFind} handleReset={handleReset} loading={loading} loadMsg={loadMsg} />
 
         {/* The Bottom part of the Herosection */}
         {routeReady && <HeroSectionBottom/>}

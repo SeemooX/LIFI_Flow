@@ -15,6 +15,59 @@ interface Card {
     color: string;
 }
 
+const MOCK_STEPS: RouteStep[] = [
+  {
+    id: 1,
+    kind: "swap",
+    protocol: "Uniswap V3",
+    protocolInitial: "U",
+    protocolColor: "#FF007A",
+    fromToken: "ETH",
+    toToken: "USDC",
+    fromChain: "eth",
+    toChain: "eth",
+    gas: "$1.82",
+    duration: "~30s",
+  },
+  {
+    id: 2,
+    kind: "bridge",
+    protocol: "Stargate",
+    protocolInitial: "S",
+    protocolColor: "#9B8CFF",
+    fromToken: "USDC",
+    toToken: "USDC",
+    fromChain: "eth",
+    toChain: "pol",
+    gas: "$1.20",
+    duration: "~3m 30s",
+  },
+  {
+    id: 3,
+    kind: "swap",
+    protocol: "QuickSwap",
+    protocolInitial: "Q",
+    protocolColor: "#2D9CFF",
+    fromToken: "USDC",
+    toToken: "USDC",
+    fromChain: "pol",
+    toChain: "pol",
+    gas: "$0.40",
+    duration: "~32s",
+  },
+];
+
+const MOCK_SUMMARY = {
+  output: "1,847.23 USDC",
+  time: "4m 32s",
+  gas: "$3.42",
+  bridge: "Stargate",
+  dex: "Uniswap V3",
+  slippage: "0.50%",
+  steps: 3,
+  tags: ["CHEAPEST", "FASTEST"],
+};
+
 function SectionHead({ title, meta }: Head) {
   return (
     <div className="flex items-center gap-3 mb-5">

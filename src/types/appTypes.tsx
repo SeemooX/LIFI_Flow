@@ -20,3 +20,11 @@ export interface Chain {
   color: string;
   symbol: string;
 }
+
+export type HeroSectionTopProps = {
+  routeReady: boolean;
+  loading: boolean;
+  handleReset: () => void;
+  handleFind: () => void;
+  loadMsg: string;
+};

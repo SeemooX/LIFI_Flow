@@ -1,12 +1,45 @@
-import { ArrowRight, ChevronDown, Loader2 } from "lucide-react";
+import { ArrowRight, ChevronDown, Loader2, X } from "lucide-react";
+import type { HeroSectionTopProps } from "../../types/appTypes";
+import type { Chain } from "../../types/appTypes";
+import { useState } from "react";
 
 interface Box {
-    label: string; value: string;
+    label: string;
+    value: string;
     onChange: (v: string) => void;
     options: { value: string; label: string }[];
+    CHAIN_MAP: Record<string, Chain>
 }
 
-function SelectBox({ label, value, onChange, options}: Box) {
+interface Box1 {
+    label: string;
+    value: string;
+    onChange: (v: string) => void;
+    options: string[];
+}
+
+const TOKENS: Record<string, string[]> = {
+  eth: ["ETH", "USDC", "USDT", "DAI", "WBTC"],
+  base: ["ETH", "USDC", "USDbC", "DAI"],
+  pol: ["MATIC", "USDC", "USDT", "DAI", "WETH"],
+  arb: ["ETH", "USDC", "USDT", "ARB", "GMX"],
+  opt: ["ETH", "USDC", "USDT", "OP"],
+  sol: ["SOL", "USDC", "USDT", "RAY"],
+};
+
+const CHAINS: Chain[] = [
+  { id: "eth", name: "Ethereum", color: "#627EEA", symbol: "Ξ" },
+  { id: "base", name: "Base", color: "#0052FF", symbol: "B" },
+  { id: "pol", name: "Polygon", color: "#8247E5", symbol: "P" },
+  { id: "arb", name: "Arbitrum", color: "#12AAFF", symbol: "A" },
+  { id: "opt", name: "Optimism", color: "#FF0420", symbol: "O" },
+  { id: "sol", name: "Solana", color: "#9945FF", symbol: "S" },
+];
+
+const CHAIN_MAP = Object.fromEntries(CHAINS.map((c) => [c.id, c]));
+
+
+function SelectBox({ label, value, onChange, options, CHAIN_MAP }: Box) {
     const chain = CHAIN_MAP[value];
     return (
         <div>
@@ -37,36 +70,47 @@ function SelectBox({ label, value, onChange, options}: Box) {
     );
 }
 
-function TokenSelect({label, value, onChange, options}: Box) {
-  return (
-    <div>
-      <FieldLabel>{label}</FieldLabel>
-      <div className="relative">
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full appearance-none bg-secondary border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground pr-8 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/40 cursor-pointer transition-colors hover:border-white/15 font-mono"
-        >
-          {options.map((t) => (
-            <option key={t} value={t} className="bg-[#141929]">{t}</option>
-          ))}
-        </select>
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-      </div>
-    </div>
-  );
+function TokenSelect({ label, value, onChange, options }: Box1) {
+    return (
+        <div>
+            <FieldLabel>{label}</FieldLabel>
+            <div className="relative">
+                <select
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="w-full appearance-none bg-secondary border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground pr-8 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/40 cursor-pointer transition-colors hover:border-white/15 font-mono"
+                >
+                    {options.map((t: any) => (
+                        <option key={t} value={t} className="bg-[#141929]">{t}</option>
+                    ))}
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            </div>
+        </div>
+    );
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="text-[10px] font-semibold tracking-widest uppercase font-mono text-muted-foreground mb-1.5">
-      {children}
-    </div>
-  );
+    return (
+        <div className="text-[10px] font-semibold tracking-widest uppercase font-mono text-muted-foreground mb-1.5">
+            {children}
+        </div>
+    );
 }
 
 
-const HeroSectionTop = () => {
+const HeroSectionTop = ({ routeReady, handleFind, handleReset, loading, loadMsg }: HeroSectionTopProps) => {
+    // Form state
+    const [srcChain, setSrcChain] = useState("eth");
+    const [srcToken, setSrcToken] = useState("ETH");
+    const [amount, setAmount] = useState("1.0");
+    const [dstChain, setDstChain] = useState("pol");
+    const [dstToken, setDstToken] = useState("USDC");
+
+    const chainOpts = CHAINS.map((c) => ({ value: c.id, label: c.name }));
+    const srcTokOpts = TOKENS[srcChain] ?? [];
+    const dstTokOpts = TOKENS[dstChain] ?? [];
+
     return (
         <>
             {/* ── Route Configuration ── */}
@@ -96,6 +140,7 @@ const HeroSectionTop = () => {
                             value={srcChain}
                             onChange={setSrcChain}
                             options={chainOpts}
+                            CHAIN_MAP={CHAIN_MAP}
                         />
                         <div className="grid grid-cols-2 gap-2">
                             <TokenSelect
@@ -138,6 +183,7 @@ const HeroSectionTop = () => {
                             value={dstChain}
                             onChange={setDstChain}
                             options={chainOpts}
+                            CHAIN_MAP={CHAIN_MAP}
                         />
                         <TokenSelect
                             label="Token"
