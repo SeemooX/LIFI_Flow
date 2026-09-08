@@ -2,133 +2,223 @@ import { ArrowRight, Check, Copy, Shield } from "lucide-react";
 import StepCard from "./StepCard";
 import { useState } from "react";
 import { highlight } from "../../utils/helpers";
+import type { Chain, HeroSectionBottomProps } from "../../types/appTypes";
+import type { RouteStep } from "../../types/appTypes";
+import {
+    Clock,
+    Zap,
+    GitBranch,
+    RefreshCw,
+    Layers,
+    Code2,
+    FileText,
+    TrendingUp,
+    Activity,
+} from "lucide-react";
 
 interface Head {
-    title: string; 
-    meta?: string 
+    title: string;
+    meta?: string
 }
 
 interface Card {
-    label: string; 
-    value: string; 
-    icon: React.ElementType; 
+    label: string;
+    value: string;
+    icon: React.ElementType;
     color: string;
 }
 
 const MOCK_STEPS: RouteStep[] = [
-  {
-    id: 1,
-    kind: "swap",
-    protocol: "Uniswap V3",
-    protocolInitial: "U",
-    protocolColor: "#FF007A",
-    fromToken: "ETH",
-    toToken: "USDC",
-    fromChain: "eth",
-    toChain: "eth",
-    gas: "$1.82",
-    duration: "~30s",
-  },
-  {
-    id: 2,
-    kind: "bridge",
-    protocol: "Stargate",
-    protocolInitial: "S",
-    protocolColor: "#9B8CFF",
-    fromToken: "USDC",
-    toToken: "USDC",
-    fromChain: "eth",
-    toChain: "pol",
-    gas: "$1.20",
-    duration: "~3m 30s",
-  },
-  {
-    id: 3,
-    kind: "swap",
-    protocol: "QuickSwap",
-    protocolInitial: "Q",
-    protocolColor: "#2D9CFF",
-    fromToken: "USDC",
-    toToken: "USDC",
-    fromChain: "pol",
-    toChain: "pol",
-    gas: "$0.40",
-    duration: "~32s",
-  },
+    {
+        id: 1,
+        kind: "swap",
+        protocol: "Uniswap V3",
+        protocolInitial: "U",
+        protocolColor: "#FF007A",
+        fromToken: "ETH",
+        toToken: "USDC",
+        fromChain: "eth",
+        toChain: "eth",
+        gas: "$1.82",
+        duration: "~30s",
+    },
+    {
+        id: 2,
+        kind: "bridge",
+        protocol: "Stargate",
+        protocolInitial: "S",
+        protocolColor: "#9B8CFF",
+        fromToken: "USDC",
+        toToken: "USDC",
+        fromChain: "eth",
+        toChain: "pol",
+        gas: "$1.20",
+        duration: "~3m 30s",
+    },
+    {
+        id: 3,
+        kind: "swap",
+        protocol: "QuickSwap",
+        protocolInitial: "Q",
+        protocolColor: "#2D9CFF",
+        fromToken: "USDC",
+        toToken: "USDC",
+        fromChain: "pol",
+        toChain: "pol",
+        gas: "$0.40",
+        duration: "~32s",
+    },
 ];
 
 const MOCK_SUMMARY = {
-  output: "1,847.23 USDC",
-  time: "4m 32s",
-  gas: "$3.42",
-  bridge: "Stargate",
-  dex: "Uniswap V3",
-  slippage: "0.50%",
-  steps: 3,
-  tags: ["CHEAPEST", "FASTEST"],
+    output: "1,847.23 USDC",
+    time: "4m 32s",
+    gas: "$3.42",
+    bridge: "Stargate",
+    dex: "Uniswap V3",
+    slippage: "0.50%",
+    steps: 3,
+    tags: ["CHEAPEST", "FASTEST"],
+};
+
+const CHAINS: Chain[] = [
+    { id: "eth", name: "Ethereum", color: "#627EEA", symbol: "Ξ" },
+    { id: "base", name: "Base", color: "#0052FF", symbol: "B" },
+    { id: "pol", name: "Polygon", color: "#8247E5", symbol: "P" },
+    { id: "arb", name: "Arbitrum", color: "#12AAFF", symbol: "A" },
+    { id: "opt", name: "Optimism", color: "#FF0420", symbol: "O" },
+    { id: "sol", name: "Solana", color: "#9945FF", symbol: "S" },
+];
+
+const CHAIN_MAP = Object.fromEntries(CHAINS.map((c) => [c.id, c]));
+
+const RAW_JSON = {
+    id: "route_01j5kx7b2c9f8e3d",
+    fromChainId: 1,
+    toChainId: 137,
+    fromToken: {
+        symbol: "ETH",
+        address: "0x0000000000000000000000000000000000000000",
+        chainId: 1,
+        decimals: 18,
+        priceUSD: "1847.23",
+    },
+    toToken: {
+        symbol: "USDC",
+        address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        chainId: 137,
+        decimals: 6,
+        priceUSD: "1.00",
+    },
+    fromAmount: "1000000000000000000",
+    toAmountMin: "1838000000",
+    toAmountEstimate: "1847230000",
+    slippage: 0.005,
+    insurance: { state: "INSURED", feeAmountUsd: "0.12" },
+    tags: ["CHEAPEST", "FASTEST"],
+    steps: [
+        {
+            type: "swap", tool: "uniswap",
+            toolDetails: { name: "Uniswap V3", key: "uniswap" },
+            action: { fromChainId: 1, toChainId: 1, fromToken: "ETH", toToken: "USDC" },
+            estimate: {
+                fromAmount: "1000000000000000000",
+                toAmount: "1850000000",
+                gasCosts: [{ amount: "1820000000000000", token: "ETH", amountUSD: "1.82" }],
+                executionDuration: 30,
+                feeCosts: [],
+            },
+        },
+        {
+            type: "cross", tool: "stargate",
+            toolDetails: { name: "Stargate", key: "stargate" },
+            action: { fromChainId: 1, toChainId: 137, fromToken: "USDC", toToken: "USDC" },
+            estimate: {
+                fromAmount: "1850000000",
+                toAmount: "1848000000",
+                gasCosts: [{ amount: "1200000000000000", token: "ETH", amountUSD: "1.20" }],
+                executionDuration: 210,
+                feeCosts: [{ amount: "2000000", token: "USDC", amountUSD: "2.00", name: "Bridge Fee" }],
+            },
+        },
+        {
+            type: "swap", tool: "quickswap",
+            toolDetails: { name: "QuickSwap", key: "quickswap" },
+            action: { fromChainId: 137, toChainId: 137, fromToken: "USDC", toToken: "USDC" },
+            estimate: {
+                fromAmount: "1848000000",
+                toAmount: "1847230000",
+                gasCosts: [{ amount: "40000000000000", token: "MATIC", amountUSD: "0.40" }],
+                executionDuration: 32,
+                feeCosts: [],
+            },
+        },
+    ],
 };
 
 function SectionHead({ title, meta }: Head) {
-  return (
-    <div className="flex items-center gap-3 mb-5">
-      <span className="text-xs font-semibold tracking-widest uppercase font-mono text-muted-foreground">{title}</span>
-      {meta && <span className="text-[10px] font-mono text-muted-foreground/50">{meta}</span>}
-      <div className="flex-1 h-px bg-border" />
-    </div>
-  );
+    return (
+        <div className="flex items-center gap-3 mb-5">
+            <span className="text-xs font-semibold tracking-widest uppercase font-mono text-muted-foreground">{title}</span>
+            {meta && <span className="text-[10px] font-mono text-muted-foreground/50">{meta}</span>}
+            <div className="flex-1 h-px bg-border" />
+        </div>
+    );
 }
 
 function MetCard({ label, value, icon: Icon, color }: Card) {
-  return (
-    <div className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-3 hover:border-white/10 transition-colors">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold tracking-widest uppercase font-mono text-muted-foreground">{label}</span>
-        <span className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: `${color}18` }}>
-          <Icon className="w-3.5 h-3.5" style={{ color }} />
-        </span>
-      </div>
-      <div className="text-xl font-semibold text-foreground tracking-tight leading-none">{value}</div>
-    </div>
-  );
+    return (
+        <div className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-3 hover:border-white/10 transition-colors">
+            <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold tracking-widest uppercase font-mono text-muted-foreground">{label}</span>
+                <span className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${color}18` }}>
+                    <Icon className="w-3.5 h-3.5" style={{ color }} />
+                </span>
+            </div>
+            <div className="text-xl font-semibold text-foreground tracking-tight leading-none">{value}</div>
+        </div>
+    );
 }
 
 function ChainPill({ chainId, showLabel = false }: { chainId: string; showLabel?: boolean }) {
-  const c = CHAIN_MAP[chainId];
-  if (!c) return null;
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <span
-        className="inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold leading-none flex-shrink-0"
-        style={{ background: `${c.color}22`, color: c.color, border: `1px solid ${c.color}33` }}
-      >
-        {c.symbol}
-      </span>
-      {showLabel && <span className="text-sm text-foreground">{c.name}</span>}
-    </span>
-  );
+    const c = CHAIN_MAP[chainId];
+    if (!c) return null;
+    return (
+        <span className="inline-flex items-center gap-1.5">
+            <span
+                className="inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold leading-none flex-shrink-0"
+                style={{ background: `${c.color}22`, color: c.color, border: `1px solid ${c.color}33` }}
+            >
+                {c.symbol}
+            </span>
+            {showLabel && <span className="text-sm text-foreground">{c.name}</span>}
+        </span>
+    );
 }
 
 function CopyBtn({ text }: { text: string }) {
-  const [done, setDone] = useState(false);
-  const copy = async () => {
-    await navigator.clipboard.writeText(text).catch(() => { });
-    setDone(true);
-    setTimeout(() => setDone(false), 2000);
-  };
-  return (
-    <button
-      onClick={copy}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono text-muted-foreground hover:text-foreground border border-border hover:border-white/15 bg-white/[0.02] hover:bg-white/[0.05] transition-all"
-    >
-      {done ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-      {done ? "Copied!" : "Copy"}
-    </button>
-  );
+    const [done, setDone] = useState(false);
+    const copy = async () => {
+        await navigator.clipboard.writeText(text).catch(() => { });
+        setDone(true);
+        setTimeout(() => setDone(false), 2000);
+    };
+    return (
+        <button
+            onClick={copy}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono text-muted-foreground hover:text-foreground border border-border hover:border-white/15 bg-white/[0.02] hover:bg-white/[0.05] transition-all"
+        >
+            {done ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+            {done ? "Copied!" : "Copy"}
+        </button>
+    );
 }
 
 
-const HeroSectionBottom = () => {
+const HeroSectionBottom = ({ devTab, setDevTab }: HeroSectionBottomProps) => {
+    const jsonStr = JSON.stringify(RAW_JSON, null, 2);
+
     return (
         <div className="space-y-10">
 

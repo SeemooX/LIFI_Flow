@@ -1,7 +1,9 @@
 import { ArrowRight, ChevronDown, Loader2, X } from "lucide-react";
 import type { HeroSectionTopProps } from "../../types/appTypes";
 import type { Chain } from "../../types/appTypes";
-import { useState } from "react";
+import { CHAINS } from "../../config/chains";
+import { CHAIN_MAP } from "../../config/chains";
+import type { TokenSelectProps } from "../../types/appTypes";
 
 interface Box {
     label: string;
@@ -10,34 +12,6 @@ interface Box {
     options: { value: string; label: string }[];
     CHAIN_MAP: Record<string, Chain>
 }
-
-interface Box1 {
-    label: string;
-    value: string;
-    onChange: (v: string) => void;
-    options: string[];
-}
-
-const TOKENS: Record<string, string[]> = {
-  eth: ["ETH", "USDC", "USDT", "DAI", "WBTC"],
-  base: ["ETH", "USDC", "USDbC", "DAI"],
-  pol: ["MATIC", "USDC", "USDT", "DAI", "WETH"],
-  arb: ["ETH", "USDC", "USDT", "ARB", "GMX"],
-  opt: ["ETH", "USDC", "USDT", "OP"],
-  sol: ["SOL", "USDC", "USDT", "RAY"],
-};
-
-const CHAINS: Chain[] = [
-  { id: "eth", name: "Ethereum", color: "#627EEA", symbol: "Ξ" },
-  { id: "base", name: "Base", color: "#0052FF", symbol: "B" },
-  { id: "pol", name: "Polygon", color: "#8247E5", symbol: "P" },
-  { id: "arb", name: "Arbitrum", color: "#12AAFF", symbol: "A" },
-  { id: "opt", name: "Optimism", color: "#FF0420", symbol: "O" },
-  { id: "sol", name: "Solana", color: "#9945FF", symbol: "S" },
-];
-
-const CHAIN_MAP = Object.fromEntries(CHAINS.map((c) => [c.id, c]));
-
 
 function SelectBox({ label, value, onChange, options, CHAIN_MAP }: Box) {
     const chain = CHAIN_MAP[value];
@@ -70,7 +44,7 @@ function SelectBox({ label, value, onChange, options, CHAIN_MAP }: Box) {
     );
 }
 
-function TokenSelect({ label, value, onChange, options }: Box1) {
+function TokenSelect({ label, value, onChange, options }: TokenSelectProps) {
     return (
         <div>
             <FieldLabel>{label}</FieldLabel>
@@ -99,17 +73,27 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 }
 
 
-const HeroSectionTop = ({ routeReady, handleFind, handleReset, loading, loadMsg }: HeroSectionTopProps) => {
-    // Form state
-    const [srcChain, setSrcChain] = useState("eth");
-    const [srcToken, setSrcToken] = useState("ETH");
-    const [amount, setAmount] = useState("1.0");
-    const [dstChain, setDstChain] = useState("pol");
-    const [dstToken, setDstToken] = useState("USDC");
+const HeroSectionTop = ({
+    routeReady,
+    handleFind,
+    handleReset,
+    loading,
+    loadMsg,
+    srcChain,
+    setSrcChain,
+    srcToken,
+    setSrcToken,
+    amount,
+    setAmount,
+    dstChain,
+    setDstChain,
+    dstToken,
+    setDstToken,
+}: HeroSectionTopProps) => {
 
     const chainOpts = CHAINS.map((c) => ({ value: c.id, label: c.name }));
-    const srcTokOpts = TOKENS[srcChain] ?? [];
-    const dstTokOpts = TOKENS[dstChain] ?? [];
+    const srcTokOpts = CHAIN_MAP[srcChain]?.tokens ?? [];
+    const dstTokOpts = CHAIN_MAP[dstChain]?.tokens ?? [];
 
     return (
         <>

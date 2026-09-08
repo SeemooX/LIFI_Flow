@@ -1,85 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { ArrowRightLeft } from "lucide-react";
-import { createClient } from '@lifi/sdk';
-import { getRoutes } from '@lifi/sdk';
+/* import { createClient, getRoutes } from '@lifi/sdk'; */
 import Header from "./components/Header";
 import HeroSectionTop from "./components/HerosectionTop";
 import HeroSectionBottom from "./components/HeroSectionBottom";
+import { CHAIN_MAP } from "../config/chains";
+import { findRoutes } from "../services/lifi";
+import { parseUnits } from "ethers";
+import type { RouteStep } from "../types/appTypes";
 
-const RAW_JSON = {
-  id: "route_01j5kx7b2c9f8e3d",
-  fromChainId: 1,
-  toChainId: 137,
-  fromToken: {
-    symbol: "ETH",
-    address: "0x0000000000000000000000000000000000000000",
-    chainId: 1,
-    decimals: 18,
-    priceUSD: "1847.23",
-  },
-  toToken: {
-    symbol: "USDC",
-    address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-    chainId: 137,
-    decimals: 6,
-    priceUSD: "1.00",
-  },
-  fromAmount: "1000000000000000000",
-  toAmountMin: "1838000000",
-  toAmountEstimate: "1847230000",
-  slippage: 0.005,
-  insurance: { state: "INSURED", feeAmountUsd: "0.12" },
-  tags: ["CHEAPEST", "FASTEST"],
-  steps: [
-    {
-      type: "swap", tool: "uniswap",
-      toolDetails: { name: "Uniswap V3", key: "uniswap" },
-      action: { fromChainId: 1, toChainId: 1, fromToken: "ETH", toToken: "USDC" },
-      estimate: {
-        fromAmount: "1000000000000000000",
-        toAmount: "1850000000",
-        gasCosts: [{ amount: "1820000000000000", token: "ETH", amountUSD: "1.82" }],
-        executionDuration: 30,
-        feeCosts: [],
-      },
-    },
-    {
-      type: "cross", tool: "stargate",
-      toolDetails: { name: "Stargate", key: "stargate" },
-      action: { fromChainId: 1, toChainId: 137, fromToken: "USDC", toToken: "USDC" },
-      estimate: {
-        fromAmount: "1850000000",
-        toAmount: "1848000000",
-        gasCosts: [{ amount: "1200000000000000", token: "ETH", amountUSD: "1.20" }],
-        executionDuration: 210,
-        feeCosts: [{ amount: "2000000", token: "USDC", amountUSD: "2.00", name: "Bridge Fee" }],
-      },
-    },
-    {
-      type: "swap", tool: "quickswap",
-      toolDetails: { name: "QuickSwap", key: "quickswap" },
-      action: { fromChainId: 137, toChainId: 137, fromToken: "USDC", toToken: "USDC" },
-      estimate: {
-        fromAmount: "1848000000",
-        toAmount: "1847230000",
-        gasCosts: [{ amount: "40000000000000", token: "MATIC", amountUSD: "0.40" }],
-        executionDuration: 32,
-        feeCosts: [],
-      },
-    },
-  ],
-};
-
-const LOADING_MESSAGES = [
-  "Scanning 40+ bridges…",
-  "Comparing liquidity pools…",
-  "Evaluating gas costs…",
-  "Checking slippage tolerance…",
-  "Optimizing execution path…",
-  "Route found ✓",
-];
-
-function Divider({ label }: { label?: string }) {
+/* function Divider({ label }: { label?: string }) {
   return (
     <div className="flex items-center gap-3 my-6">
       <div className="flex-1 h-px bg-border" />
@@ -87,20 +17,25 @@ function Divider({ label }: { label?: string }) {
       <div className="flex-1 h-px bg-border" />
     </div>
   );
-}
+} */
 
 export default function App() {
-
   // Result state
+  const [routes, setRoutes] = useState<RouteStep[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [loadMsg, setLoadMsg] = useState<string>("");
   const [routeReady, setRouteReady] = useState<boolean>(false);
   const [devTab, setDevTab] = useState<"summary" | "json">("summary");
 
-  const msgIdxRef = useRef(0);
+  // Form state
+  const [srcChain, setSrcChain] = useState("eth");
+  const [srcToken, setSrcToken] = useState("ETH");
+  const [amount, setAmount] = useState("1.0");
+  const [dstChain, setDstChain] = useState("pol");
+  const [dstToken, setDstToken] = useState("USDC");
 
   // Sync tokens when chain changes
-  useEffect(() => {
+ /*  useEffect(() => {
     const lifi = async () => {
       const client = createClient({
         integrator: 'CinemaNova',
@@ -116,6 +51,7 @@ export default function App() {
 
       const result = await getRoutes(client, routesRequest);
       const routes = result.routes;
+      console.log(routes); */
 
       /* const blob = new Blob(
         [JSON.stringify(routes, null, 2)],
@@ -131,45 +67,100 @@ export default function App() {
 
       URL.revokeObjectURL(url); */
 
-      console.log("Routes saved!");
-
+     /*  console.log("Routes saved!");
     }
 
     lifi();
-  }, []);
+  }, []); */
 
   /* useEffect(() => {
     const tokens = TOKENS[dstChain] ?? [];
     if (!tokens.includes(dstToken)) setDstToken(tokens[0] ?? "");
   }, [dstChain]); */
 
-  const handleFind = () => {
-    setLoading(true);
-    setRouteReady(false);
-    msgIdxRef.current = 0;
-    setLoadMsg(LOADING_MESSAGES[0]);
+ /*  const handleFind = async () => {
+    const sourceChain = CHAIN_MAP[srcChain];
+    const destinationChain = CHAIN_MAP[dstChain];
 
-    const interval = setInterval(() => {
-      msgIdxRef.current += 1;
-      if (msgIdxRef.current < LOADING_MESSAGES.length) {
-        setLoadMsg(LOADING_MESSAGES[msgIdxRef.current]);
+    const sourceToken = sourceChain.tokens.find(
+      (token) => token.symbol === srcToken
+    );
+
+    const destinationToken = destinationChain.tokens.find(
+      (token) => token.symbol === dstToken
+    );
+
+    if (!sourceToken || !destinationToken) {
+      console.error("Token not found");
+      return;
+    }
+
+    console.log({
+      fromChainId: sourceChain.chainId,
+      toChainId: destinationChain.chainId,
+      fromTokenAddress: sourceToken.address,
+      toTokenAddress: destinationToken.address,
+    });
+  } */;
+
+
+  const handleFind = async () => {
+    try {
+      setLoading(true);
+      setRouteReady(false);
+      setLoadMsg("Finding best route...");
+
+      const sourceChain = CHAIN_MAP[srcChain];
+      const destinationChain = CHAIN_MAP[dstChain];
+
+      if (!sourceChain || !destinationChain) {
+        throw new Error("Invalid chain selected");
       }
-      if (msgIdxRef.current >= LOADING_MESSAGES.length - 1) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setLoading(false);
-          setRouteReady(true);
-        }, 400);
+
+      const sourceToken = sourceChain.tokens.find(
+        (token) => token.symbol === srcToken
+      );
+
+      const destinationToken = destinationChain.tokens.find(
+        (token) => token.symbol === dstToken
+      );
+
+      if (!sourceToken || !destinationToken) {
+        throw new Error("Token not found");
       }
-    }, 260);
+
+      const fromAmount = parseUnits(
+        amount,
+        sourceToken.decimals
+      ).toString();
+
+      const theRoutes = await findRoutes(
+        sourceChain.chainId,
+        destinationChain.chainId,
+        sourceToken.address,
+        destinationToken.address,
+        fromAmount
+      );
+
+      if (theRoutes.length === 0) {
+        throw new Error("No route found");
+      }
+
+      console.log("Routes:", theRoutes);
+
+      /* setRoutes(theRoutes); */
+      setRouteReady(true);
+    } catch (error) {
+      console.error("An error occurred:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
     setRouteReady(false);
     setDevTab("summary");
   };
-
-  const jsonStr = JSON.stringify(RAW_JSON, null, 2);
 
   return (
     <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: '"Geist", system-ui, sans-serif' }}>
@@ -191,7 +182,7 @@ export default function App() {
       </div>
 
       {/* ── Header ── */}
-      <Header/>
+      <Header />
 
       {/* ── Page ── */}
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-10">
@@ -208,10 +199,26 @@ export default function App() {
         </div>
 
         {/* The top part of the Herosection */}
-        <HeroSectionTop routeReady={routeReady} handleFind={handleFind} handleReset={handleReset} loading={loading} loadMsg={loadMsg} />
+        <HeroSectionTop
+          routeReady={routeReady}
+          handleFind={handleFind}
+          handleReset={handleReset}
+          loading={loading}
+          loadMsg={loadMsg}
+          srcChain={srcChain}
+          setSrcChain={setSrcChain}
+          srcToken={srcToken}
+          setSrcToken={setSrcToken}
+          amount={amount}
+          setAmount={setAmount}
+          dstChain={dstChain}
+          setDstChain={setDstChain}
+          dstToken={dstToken}
+          setDstToken={setDstToken}
+        />
 
         {/* The Bottom part of the Herosection */}
-        {routeReady && <HeroSectionBottom/>}
+        {routeReady && <HeroSectionBottom devTab={devTab} setDevTab={setDevTab} /* routes={routes} */ />}
 
         {/* ── Empty state ── */}
         {!routeReady && !loading && (
