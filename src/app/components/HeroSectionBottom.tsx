@@ -104,7 +104,7 @@ const HeroSectionBottom = ({ devTab, setDevTab, routes, routeSummary, rawRoute }
                     </span>
                 ))}
                 <span className="text-[10px] font-mono text-muted-foreground ml-auto">
-                    route_01j5kx7b2c9f8e3d
+                    {rawRoute.id}
                 </span>
             </div>
 
@@ -158,48 +158,139 @@ const HeroSectionBottom = ({ devTab, setDevTab, routes, routeSummary, rawRoute }
                 {/* Summary tab */}
                 {devTab === "summary" && (
                     <div className="bg-card border border-border rounded-2xl overflow-hidden">
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
+
+                            {/* General route information */}
                             <div className="p-5 space-y-5">
                                 {[
-                                    { label: "Route ID", value: "route_01j5kx7b2c9f8e3d", mono: true, color: "#7c6aff" },
-                                    { label: "From", value: "1.0 ETH", mono: true, color: "#e2e8f0" },
-                                    { label: "To (est.)", value: "~1,847.23 USDC", mono: true, color: "#34d399" },
-                                    { label: "Slippage", value: "0.50%", mono: true, color: "#e2e8f0" },
+                                    {
+                                        label: "Route ID",
+                                        value: rawRoute?.id ?? rawRoute?.routeId ?? "—",
+                                        mono: true,
+                                        color: "#7c6aff",
+                                    },
+                                    {
+                                        label: "From",
+                                        value: rawRoute?.fromAmount
+                                            ? `${Number(rawRoute.fromAmount) / 10 ** (rawRoute.fromToken?.decimals ?? 18)} ${rawRoute.fromToken?.symbol ?? ""}`.trim()
+                                            : "—",
+                                        mono: true,
+                                        color: "#e2e8f0",
+                                    },
+                                    {
+                                        label: "To (est.)",
+                                        value: routeSummary.output
+                                            ? `~${routeSummary.output}`
+                                            : "—",
+                                        mono: true,
+                                        color: "#34d399",
+                                    },
+                                    {
+                                        label: "Slippage",
+                                        value: routeSummary.slippage ?? "—",
+                                        mono: true,
+                                        color: "#e2e8f0",
+                                    },
                                 ].map(({ label, value, color }) => (
                                     <div key={label}>
-                                        <div className="text-[10px] font-mono font-semibold uppercase tracking-widest text-muted-foreground mb-1">{label}</div>
-                                        <code className="text-xs font-mono break-all" style={{ color }}>{value}</code>
+                                        <div className="text-[10px] font-mono font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+                                            {label}
+                                        </div>
+
+                                        <code
+                                            className="text-xs font-mono break-all"
+                                            style={{ color }}
+                                        >
+                                            {value}
+                                        </code>
                                     </div>
                                 ))}
                             </div>
+
+                            {/* Technical route information */}
                             <div className="p-5 space-y-5">
                                 {[
-                                    { label: "fromAmount (wei)", value: "1000000000000000000", color: "#fbbf24" },
-                                    { label: "toAmountMin", value: "1838000000", color: "#fbbf24" },
-                                    { label: "Insurance", value: "INSURED · $0.12 fee", color: "#34d399" },
-                                    { label: "Tags", value: "CHEAPEST, FASTEST", color: "#a78bfa" },
+                                    {
+                                        label: "fromAmount (wei)",
+                                        value:
+                                            rawRoute?.fromAmountWei ??
+                                            rawRoute?.fromAmount ??
+                                            "—",
+                                        color: "#fbbf24",
+                                    },
+                                    {
+                                        label: "toAmountMin",
+                                        value:
+                                            rawRoute?.toAmountMin ??
+                                            "—",
+                                        color: "#fbbf24",
+                                    },
+                                    {
+                                        label: "Insurance",
+                                        value:
+                                            rawRoute?.insurance
+                                                ? rawRoute.insurance
+                                                : "—",
+                                        color: "#34d399",
+                                    },
+                                    {
+                                        label: "Tags",
+                                        value:
+                                            routeSummary.tags?.join(", ") ?? "—",
+                                        color: "#a78bfa",
+                                    },
                                 ].map(({ label, value, color }) => (
                                     <div key={label}>
-                                        <div className="text-[10px] font-mono font-semibold uppercase tracking-widest text-muted-foreground mb-1">{label}</div>
-                                        <code className="text-xs font-mono break-all" style={{ color }}>{value}</code>
+                                        <div className="text-[10px] font-mono font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+                                            {label}
+                                        </div>
+
+                                        <code
+                                            className="text-xs font-mono break-all"
+                                            style={{ color }}
+                                        >
+                                            {value}
+                                        </code>
                                     </div>
                                 ))}
                             </div>
                         </div>
+
                         {/* Chain summary row */}
                         <div className="border-t border-border px-5 py-4 flex items-center gap-6">
                             <div>
-                                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1.5">Source</div>
-                                <ChainPill chainId="eth" showLabel />
+                                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1.5">
+                                    Source
+                                </div>
+
+                                <ChainPill
+                                    chainId={rawRoute?.fromChain ?? "eth"}
+                                    showLabel
+                                />
                             </div>
+
                             <ArrowRight className="w-4 h-4 text-border mt-4" />
+
                             <div>
-                                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1.5">Destination</div>
-                                <ChainPill chainId="pol" showLabel />
+                                <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1.5">
+                                    Destination
+                                </div>
+
+                                <ChainPill
+                                    chainId={rawRoute?.toChain ?? "pol"}
+                                    showLabel
+                                />
                             </div>
+
                             <div className="ml-auto flex items-center gap-1.5">
                                 <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                                <span className="text-xs font-mono text-emerald-400">INSURED</span>
+
+                                <span className="text-xs font-mono text-emerald-400">
+                                    {rawRoute?.insurance
+                                        ? "NOT INSURED"
+                                        : "INSURED"}
+                                </span>
                             </div>
                         </div>
                     </div>

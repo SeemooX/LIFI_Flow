@@ -2,7 +2,7 @@ import { createClient, getRoutes } from '@lifi/sdk';
 
 // Creating LI.FI client once, not each time the user clicks find best route
 const client = createClient({
-   integrator: "CinemaNova",
+   integrator: "SEEMMOOX",
 });
 
 export async function findRoutes(

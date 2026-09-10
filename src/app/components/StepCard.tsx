@@ -1,5 +1,6 @@
 import { ArrowRight, ArrowRightLeft, Clock, GitBranch, Shield, Zap } from "lucide-react";
 import type { RouteStep, StepKind } from "../../types/appTypes";
+import { CHAIN_MAP } from "../../config/chains";
 
 function ChainPill({ chainId, showLabel = false }: { chainId: string; showLabel?: boolean }) {
   const c = CHAIN_MAP[chainId];

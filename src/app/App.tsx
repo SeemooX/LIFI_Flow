@@ -77,8 +77,8 @@ export default function App() {
         throw new Error("No route found");
       }
 
-      const displaySteps = transformRoute(theRoute);
-      const displaySummary = transformSummary(theRoute);
+      const displaySteps = transformRoute(theRoute[0]);
+      const displaySummary = transformSummary(theRoute[0]);
 
       /* const blob = new Blob(
         [JSON.stringify(routes, null, 2)],
@@ -96,7 +96,7 @@ export default function App() {
 
       setRoutes(displaySteps);
       setRouteSummary(displaySummary);
-      setRawRoute(theRoute)
+      setRawRoute(theRoute[0])
       setRouteReady(true);
     } catch (error) {
       console.error("An error occurred:", error);
