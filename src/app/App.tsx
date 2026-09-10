@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { ArrowRightLeft } from "lucide-react";
-/* import { createClient, getRoutes } from '@lifi/sdk'; */
 import Header from "./components/Header";
 import HeroSectionTop from "./components/HerosectionTop";
 import HeroSectionBottom from "./components/HeroSectionBottom";
 import { CHAIN_MAP } from "../config/chains";
 import { findRoutes } from "../services/lifi";
 import { parseUnits } from "ethers";
-import type { RouteStep } from "../types/appTypes";
+import { transformRoute, transformSummary } from "../utils/helpers";
 
 /* function Divider({ label }: { label?: string }) {
   return (
@@ -21,7 +20,9 @@ import type { RouteStep } from "../types/appTypes";
 
 export default function App() {
   // Result state
-  const [routes, setRoutes] = useState<RouteStep[]>([]);
+  const [routes, setRoutes] = useState<any[]>([]);
+  const [rawRoute, setRawRoute] = useState<any>({});
+  const [routeSummary, setRouteSummary] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [loadMsg, setLoadMsg] = useState<string>("");
   const [routeReady, setRouteReady] = useState<boolean>(false);
@@ -33,76 +34,6 @@ export default function App() {
   const [amount, setAmount] = useState("1.0");
   const [dstChain, setDstChain] = useState("pol");
   const [dstToken, setDstToken] = useState("USDC");
-
-  // Sync tokens when chain changes
- /*  useEffect(() => {
-    const lifi = async () => {
-      const client = createClient({
-        integrator: 'CinemaNova',
-      });
-
-      const routesRequest = {
-        fromChainId: 42161, // Arbitrum
-        toChainId: 10, // Optimism
-        fromTokenAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // USDC on Arbitrum
-        toTokenAddress: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1', // DAI on Optimism
-        fromAmount: '10000000', // 10 USDC
-      };
-
-      const result = await getRoutes(client, routesRequest);
-      const routes = result.routes;
-      console.log(routes); */
-
-      /* const blob = new Blob(
-        [JSON.stringify(routes, null, 2)],
-        { type: "application/json" }
-      );
-
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "routes.json";
-      a.click();
-
-      URL.revokeObjectURL(url); */
-
-     /*  console.log("Routes saved!");
-    }
-
-    lifi();
-  }, []); */
-
-  /* useEffect(() => {
-    const tokens = TOKENS[dstChain] ?? [];
-    if (!tokens.includes(dstToken)) setDstToken(tokens[0] ?? "");
-  }, [dstChain]); */
-
- /*  const handleFind = async () => {
-    const sourceChain = CHAIN_MAP[srcChain];
-    const destinationChain = CHAIN_MAP[dstChain];
-
-    const sourceToken = sourceChain.tokens.find(
-      (token) => token.symbol === srcToken
-    );
-
-    const destinationToken = destinationChain.tokens.find(
-      (token) => token.symbol === dstToken
-    );
-
-    if (!sourceToken || !destinationToken) {
-      console.error("Token not found");
-      return;
-    }
-
-    console.log({
-      fromChainId: sourceChain.chainId,
-      toChainId: destinationChain.chainId,
-      fromTokenAddress: sourceToken.address,
-      toTokenAddress: destinationToken.address,
-    });
-  } */;
-
 
   const handleFind = async () => {
     try {
@@ -134,7 +65,7 @@ export default function App() {
         sourceToken.decimals
       ).toString();
 
-      const theRoutes = await findRoutes(
+      const theRoute = await findRoutes(
         sourceChain.chainId,
         destinationChain.chainId,
         sourceToken.address,
@@ -142,13 +73,30 @@ export default function App() {
         fromAmount
       );
 
-      if (theRoutes.length === 0) {
+      if (!theRoute) {
         throw new Error("No route found");
       }
 
-      console.log("Routes:", theRoutes);
+      const displaySteps = transformRoute(theRoute);
+      const displaySummary = transformSummary(theRoute);
 
-      /* setRoutes(theRoutes); */
+      /* const blob = new Blob(
+        [JSON.stringify(routes, null, 2)],
+        { type: "application/json" }
+      );
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "routes.json";
+      a.click();
+
+      URL.revokeObjectURL(url); */
+
+      setRoutes(displaySteps);
+      setRouteSummary(displaySummary);
+      setRawRoute(theRoute)
       setRouteReady(true);
     } catch (error) {
       console.error("An error occurred:", error);
@@ -218,7 +166,7 @@ export default function App() {
         />
 
         {/* The Bottom part of the Herosection */}
-        {routeReady && <HeroSectionBottom devTab={devTab} setDevTab={setDevTab} /* routes={routes} */ />}
+        {routeReady && <HeroSectionBottom devTab={devTab} setDevTab={setDevTab} routes={routes} routeSummary={routeSummary} rawRoute={rawRoute} />}
 
         {/* ── Empty state ── */}
         {!routeReady && !loading && (

@@ -55,8 +55,11 @@ export interface HeroSectionTopProps {
 
 
 export type HeroSectionBottomProps = {
-  devTab: "summary" | "json"; 
+  devTab: "summary" | "json";
   setDevTab: React.Dispatch<React.SetStateAction<"summary" | "json">>;
+  routes: any[];
+  routeSummary: any;
+  rawRoute: any;
 };
 
 export type TokenSelectProps = {

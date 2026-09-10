@@ -54,8 +54,8 @@ function TokenSelect({ label, value, onChange, options }: TokenSelectProps) {
                     onChange={(e) => onChange(e.target.value)}
                     className="w-full appearance-none bg-secondary border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground pr-8 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/40 cursor-pointer transition-colors hover:border-white/15 font-mono"
                 >
-                    {options.map((t: any) => (
-                        <option key={t} value={t} className="bg-[#141929]">{t}</option>
+                    {options.map((t: any, index) => (
+                        <option key={index} value={t.symbol} className="bg-[#141929]">{t.symbol}</option>
                     ))}
                 </select>
                 <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />

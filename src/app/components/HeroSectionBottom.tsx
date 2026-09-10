@@ -2,8 +2,7 @@ import { ArrowRight, Check, Copy, Shield } from "lucide-react";
 import StepCard from "./StepCard";
 import { useState } from "react";
 import { highlight } from "../../utils/helpers";
-import type { Chain, HeroSectionBottomProps } from "../../types/appTypes";
-import type { RouteStep } from "../../types/appTypes";
+import type { HeroSectionBottomProps } from "../../types/appTypes";
 import {
     Clock,
     Zap,
@@ -15,6 +14,7 @@ import {
     TrendingUp,
     Activity,
 } from "lucide-react";
+import { CHAIN_MAP } from "../../config/chains";
 
 interface Head {
     title: string;
@@ -27,134 +27,6 @@ interface Card {
     icon: React.ElementType;
     color: string;
 }
-
-const MOCK_STEPS: RouteStep[] = [
-    {
-        id: 1,
-        kind: "swap",
-        protocol: "Uniswap V3",
-        protocolInitial: "U",
-        protocolColor: "#FF007A",
-        fromToken: "ETH",
-        toToken: "USDC",
-        fromChain: "eth",
-        toChain: "eth",
-        gas: "$1.82",
-        duration: "~30s",
-    },
-    {
-        id: 2,
-        kind: "bridge",
-        protocol: "Stargate",
-        protocolInitial: "S",
-        protocolColor: "#9B8CFF",
-        fromToken: "USDC",
-        toToken: "USDC",
-        fromChain: "eth",
-        toChain: "pol",
-        gas: "$1.20",
-        duration: "~3m 30s",
-    },
-    {
-        id: 3,
-        kind: "swap",
-        protocol: "QuickSwap",
-        protocolInitial: "Q",
-        protocolColor: "#2D9CFF",
-        fromToken: "USDC",
-        toToken: "USDC",
-        fromChain: "pol",
-        toChain: "pol",
-        gas: "$0.40",
-        duration: "~32s",
-    },
-];
-
-const MOCK_SUMMARY = {
-    output: "1,847.23 USDC",
-    time: "4m 32s",
-    gas: "$3.42",
-    bridge: "Stargate",
-    dex: "Uniswap V3",
-    slippage: "0.50%",
-    steps: 3,
-    tags: ["CHEAPEST", "FASTEST"],
-};
-
-const CHAINS: Chain[] = [
-    { id: "eth", name: "Ethereum", color: "#627EEA", symbol: "Ξ" },
-    { id: "base", name: "Base", color: "#0052FF", symbol: "B" },
-    { id: "pol", name: "Polygon", color: "#8247E5", symbol: "P" },
-    { id: "arb", name: "Arbitrum", color: "#12AAFF", symbol: "A" },
-    { id: "opt", name: "Optimism", color: "#FF0420", symbol: "O" },
-    { id: "sol", name: "Solana", color: "#9945FF", symbol: "S" },
-];
-
-const CHAIN_MAP = Object.fromEntries(CHAINS.map((c) => [c.id, c]));
-
-const RAW_JSON = {
-    id: "route_01j5kx7b2c9f8e3d",
-    fromChainId: 1,
-    toChainId: 137,
-    fromToken: {
-        symbol: "ETH",
-        address: "0x0000000000000000000000000000000000000000",
-        chainId: 1,
-        decimals: 18,
-        priceUSD: "1847.23",
-    },
-    toToken: {
-        symbol: "USDC",
-        address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-        chainId: 137,
-        decimals: 6,
-        priceUSD: "1.00",
-    },
-    fromAmount: "1000000000000000000",
-    toAmountMin: "1838000000",
-    toAmountEstimate: "1847230000",
-    slippage: 0.005,
-    insurance: { state: "INSURED", feeAmountUsd: "0.12" },
-    tags: ["CHEAPEST", "FASTEST"],
-    steps: [
-        {
-            type: "swap", tool: "uniswap",
-            toolDetails: { name: "Uniswap V3", key: "uniswap" },
-            action: { fromChainId: 1, toChainId: 1, fromToken: "ETH", toToken: "USDC" },
-            estimate: {
-                fromAmount: "1000000000000000000",
-                toAmount: "1850000000",
-                gasCosts: [{ amount: "1820000000000000", token: "ETH", amountUSD: "1.82" }],
-                executionDuration: 30,
-                feeCosts: [],
-            },
-        },
-        {
-            type: "cross", tool: "stargate",
-            toolDetails: { name: "Stargate", key: "stargate" },
-            action: { fromChainId: 1, toChainId: 137, fromToken: "USDC", toToken: "USDC" },
-            estimate: {
-                fromAmount: "1850000000",
-                toAmount: "1848000000",
-                gasCosts: [{ amount: "1200000000000000", token: "ETH", amountUSD: "1.20" }],
-                executionDuration: 210,
-                feeCosts: [{ amount: "2000000", token: "USDC", amountUSD: "2.00", name: "Bridge Fee" }],
-            },
-        },
-        {
-            type: "swap", tool: "quickswap",
-            toolDetails: { name: "QuickSwap", key: "quickswap" },
-            action: { fromChainId: 137, toChainId: 137, fromToken: "USDC", toToken: "USDC" },
-            estimate: {
-                fromAmount: "1848000000",
-                toAmount: "1847230000",
-                gasCosts: [{ amount: "40000000000000", token: "MATIC", amountUSD: "0.40" }],
-                executionDuration: 32,
-                feeCosts: [],
-            },
-        },
-    ],
-};
 
 function SectionHead({ title, meta }: Head) {
     return (
@@ -215,16 +87,15 @@ function CopyBtn({ text }: { text: string }) {
     );
 }
 
-
-const HeroSectionBottom = ({ devTab, setDevTab }: HeroSectionBottomProps) => {
-    const jsonStr = JSON.stringify(RAW_JSON, null, 2);
+const HeroSectionBottom = ({ devTab, setDevTab, routes, routeSummary, rawRoute }: HeroSectionBottomProps) => {
+    const jsonStr = JSON.stringify(rawRoute, null, 2);
 
     return (
         <div className="space-y-10">
 
             {/* Tags row */}
             <div className="flex items-center gap-2 -mt-4">
-                {MOCK_SUMMARY.tags.map((tag) => (
+                {routeSummary.tags.map((tag: any) => (
                     <span key={tag}
                         className="text-[10px] font-mono font-semibold tracking-widest px-2 py-1 rounded border"
                         style={{ background: "#7c6aff15", color: "#7c6aff", borderColor: "#7c6aff28" }}
@@ -239,26 +110,26 @@ const HeroSectionBottom = ({ devTab, setDevTab }: HeroSectionBottomProps) => {
 
             {/* ── Route Summary ── */}
             <section>
-                <SectionHead title="Route Summary" meta={`via ${MOCK_SUMMARY.bridge} + ${MOCK_SUMMARY.dex}`} />
+                <SectionHead title="Route Summary" meta={`via ${routeSummary.bridge} + ${routeSummary.dex}`} />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-                    <MetCard label="Estimated Output" value={MOCK_SUMMARY.output} icon={TrendingUp} color="#34d399" />
-                    <MetCard label="Estimated Time" value={MOCK_SUMMARY.time} icon={Clock} color="#38bdf8" />
-                    <MetCard label="Gas Cost" value={MOCK_SUMMARY.gas} icon={Zap} color="#f59e0b" />
-                    <MetCard label="Steps" value={`${MOCK_SUMMARY.steps} steps`} icon={Layers} color="#a78bfa" />
+                    <MetCard label="Estimated Output" value={routeSummary.output} icon={TrendingUp} color="#34d399" />
+                    <MetCard label="Estimated Time" value={routeSummary.time} icon={Clock} color="#38bdf8" />
+                    <MetCard label="Gas Cost" value={routeSummary.gas} icon={Zap} color="#f59e0b" />
+                    <MetCard label="Steps" value={`${routeSummary.steps} steps`} icon={Layers} color="#a78bfa" />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <MetCard label="Bridge" value={MOCK_SUMMARY.bridge} icon={GitBranch} color="#9B8CFF" />
-                    <MetCard label="DEX" value={MOCK_SUMMARY.dex} icon={RefreshCw} color="#f472b6" />
-                    <MetCard label="Slippage" value={MOCK_SUMMARY.slippage} icon={Activity} color="#6ee7b7" />
+                    <MetCard label="Bridge" value={routeSummary.bridge} icon={GitBranch} color="#9B8CFF" />
+                    <MetCard label="DEX" value={routeSummary.dex} icon={RefreshCw} color="#f472b6" />
+                    <MetCard label="Slippage" value={routeSummary.slippage} icon={Activity} color="#6ee7b7" />
                 </div>
             </section>
 
             {/* ── Execution Timeline ── */}
             <section>
-                <SectionHead title="Execution Timeline" meta={`${MOCK_STEPS.length} steps`} />
+                <SectionHead title="Execution Timeline" meta={`${routes.length} steps`} />
                 <div>
-                    {MOCK_STEPS.map((step, i) => (
-                        <StepCard key={step.id} step={step} isLast={i === MOCK_STEPS.length - 1} />
+                    {routes.map((step, i) => (
+                        <StepCard key={step.id} step={step} isLast={i === routes.length - 1} />
                     ))}
                 </div>
             </section>
@@ -366,7 +237,7 @@ const HeroSectionBottom = ({ devTab, setDevTab }: HeroSectionBottomProps) => {
                                 <pre
                                     className="flex-1 px-5 py-5 overflow-x-auto"
                                     style={{ color: "#7d8aa0", margin: 0 }}
-                                    dangerouslySetInnerHTML={{ __html: highlight(RAW_JSON) }}
+                                    dangerouslySetInnerHTML={{ __html: highlight(rawRoute) }}
                                 />
                             </div>
                         </div>
