@@ -674,23 +674,27 @@ A possible project structure is:
 
 ```text
 src/
-├── components/
-│   ├── RouteCard/
-│   ├── RouteDetails/
-│   └── TransactionSteps/
+├── app/
+│    ├──App.tsx
+│    └──components/
+│       ├── Header.tsx
+│       ├── HeroSectionBottom.tsx
+│       ├── HeroSectionTop.tsx
+│       └── StepCard.tsx
 │
+├── conifg/
+│   └── chains.ts
+│   
 ├── services/
-│   └── lifi/
-│       ├── client.ts
-│       └── routes.ts
+│   └── lifi.ts
 │
 ├── types/
-│   └── route.ts
+│   └── appTypes.ts
 │
 ├── utils/
-│   └── formatting.ts
+│   └── helpers.ts
 │
-└── App.tsx
+└── main.tsx
 
 The exact structure may differ depending on the implementation.
 
