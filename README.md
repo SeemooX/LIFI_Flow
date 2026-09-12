@@ -449,7 +449,6 @@ Application
      └── Parse response
 
 
-```text
 SDK
 Application
      │
@@ -510,7 +509,6 @@ The application does not need to implement the underlying routing infrastructure
 
 The LI.FI SDK acts as an integration boundary:
 
-```text
 ┌────────────────────────┐
 │      Application       │
 │                        │
